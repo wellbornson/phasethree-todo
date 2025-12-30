@@ -1,0 +1,64 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;600&display=swap');
+
+:root {
+  --neon-blue: #00f3ff;
+  --neon-pink: #ff00ff;
+  --toxic-green: #00ff41;
+  --galaxy-core: #1b2735; /* Dark Blue Sky Base */
+  --galaxy-dark: #090a0f;
+  --glass-bg-transparent: rgba(255, 255, 255, 0.02); /* More transparent */
+  --glass-border: rgba(255, 255, 255, 0.08);
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+  /* Galaxy Background: Radial gradient for depth */
+  background: radial-gradient(ellipse at bottom, var(--galaxy-core) 0%, var(--galaxy-dark) 100%);
+  color: white;
+  overflow: hidden;
+  height: 100vh;
+}
+
+/* Shining Stars Effect */
+body::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: 
+    radial-gradient(2px 2px at 20px 30px, #ffffff, rgba(0,0,0,0)),
+    radial-gradient(2px 2px at 40px 70px, #ffffff, rgba(0,0,0,0)),
+    radial-gradient(2px 2px at 50px 160px, #ffffff, rgba(0,0,0,0)),
+    radial-gradient(2px 2px at 90px 40px, #ffffff, rgba(0,0,0,0)),
+    radial-gradient(2px 2px at 130px 80px, #ffffff, rgba(0,0,0,0)),
+    radial-gradient(2px 2px at 160px 120px, #ffffff, rgba(0,0,0,0));
+  background-repeat: repeat;
+  background-size: 200px 200px;
+  animation: shine 4s infinite linear;
+  z-index: -1;
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+/* Second layer of stars for depth */
+body::after {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: 
+    radial-gradient(1.5px 1.5px at 10px 10px, #ffffff, rgba(0,0,0,0)),
+    radial-gradient(1.5px 1.5px at 150px 150px, #ffffff, rgba(0,0,0,0));
+  background-repeat: repeat;
+  background-size: 300px 300px;
+  animation: shine 6s infinite reverse;
+  z-index: -1;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+@keyframes shine {
+  0% { transform: translateY(0); opacity: 0.8; }
+  50% { opacity: 0.4; }
+  100% { transform: translateY(-100px); opacity: 0.8; }
+}

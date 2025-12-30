@@ -1,0 +1,301 @@
+# AI Todo Chatbot Phase III Task Checklist
+
+## Backend Setup
+
+### 1. Install Required Dependencies
+```bash
+pip install fastapi uvicorn sqlmodel mcp openai-agents-sdk psycopg2-binary python-dotenv
+```
+
+### 2. Create Backend Files
+Create the following files in the /backend directory:
+
+#### database.py
+```python
+from sqlmodel import create_engine, Session
+from .models import *
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+DATABASE_URL = "postgresql://neondb_owner:npg_ELw0kosYW5mp@ep-snowy-fog-ahmkxls0-pooler.c-3.us-east-1.aws.neon.tech/neondb?sslmode=require"
+
+engine = create_engine(DATABASE_URL)
+
+def get_session():
+    with Session(engine) as session:
+        yield session
+```
+
+#### models.py
+```python
+from sqlmodel import SQLModel, Field, Relationship
+from typing import Optional, List
+from datetime import datetime
+
+class Task(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    title: str = Field(nullable=False)
+    description: Optional[str] = Field(default=None)
+    completed: bool = Field(default=False)
+
+class Conversation(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    user_id: str
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+class Message(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    conversation_id: int = Field(foreign_key="conversation.id")
+    role: str  # 'user', 'assistant', or 'system'
+    content: str
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    
+    conversation: Conversation = Relationship(back_populates="messages")
+
+# Add relationship to Conversation
+Conversation.messages = Relationship(back_populates="conversation")
+```
+
+#### mcp_server.py
+```python
+from mcp.server import Server
+from mcp.types import Tool
+from sqlmodel import Session, select
+from .database import engine
+from .models import Task
+from typing import Dict, Any
+import asyncio
+
+# Initialize MCP server
+mcp_server = Server("todo-chatbot-mcp")
+
+@mcp_server.tools.list
+async def list_tasks_tool() -> list[Tool]:
+    return [
+        Tool(
+            name="add_task",
+            description="Add a new task to the user's task list",
+            input_schema={
+                "type": "object",
+                "properties": {
+                    "title": {"type": "string", "description": "Task title"},
+                    "description": {"type": "string", "description": "Task description (optional)"}
+                },
+                "required": ["title"]
+            }
+        ),
+        Tool(
+            name="list_tasks",
+            description="Retrieve all tasks for a specific user",
+            input_schema={
+                "type": "object",
+                "properties": {
+                    "completed": {"type": "boolean", "description": "Filter by completion status (optional)"}
+                }
+            }
+        ),
+        Tool(
+            name="complete_task",
+            description="Mark a specific task as completed",
+            input_schema={
+                "type": "object",
+                "properties": {
+                    "task_id": {"type": "integer", "description": "ID of the task to complete"}
+                },
+                "required": ["task_id"]
+            }
+        ),
+        Tool(
+            name="delete_task",
+            description="Remove a task from the user's task list",
+            input_schema={
+                "type": "object",
+                "properties": {
+                    "task_id": {"type": "integer", "description": "ID of the task to delete"}
+                },
+                "required": ["task_id"]
+            }
+        ),
+        Tool(
+            name="update_task",
+            description="Modify an existing task's title or description",
+            input_schema={
+                "type": "object",
+                "properties": {
+                    "task_id": {"type": "integer", "description": "ID of the task to update"},
+                    "title": {"type": "string", "description": "New task title (optional)"},
+                    "description": {"type": "string", "description": "New task description (optional)"}
+                },
+                "required": ["task_id"]
+            }
+        )
+    ]
+
+@mcp_server.tools.call("add_task")
+async def add_task_handler(title: str, description: str = None) -> Dict[str, Any]:
+    with Session(engine) as session:
+        task = Task(title=title, description=description, completed=False)
+        session.add(task)
+        session.commit()
+        session.refresh(task)
+        return {"id": task.id, "title": task.title, "completed": task.completed}
+
+@mcp_server.tools.call("list_tasks")
+async def list_tasks_handler(completed: bool = None) -> Dict[str, Any]:
+    with Session(engine) as session:
+        if completed is not None:
+            tasks = session.exec(select(Task).where(Task.completed == completed)).all()
+        else:
+            tasks = session.exec(select(Task)).all()
+        return {"tasks": [{"id": t.id, "title": t.title, "description": t.description, "completed": t.completed} for t in tasks]}
+
+@mcp_server.tools.call("complete_task")
+async def complete_task_handler(task_id: int) -> Dict[str, Any]:
+    with Session(engine) as session:
+        task = session.get(Task, task_id)
+        if task:
+            task.completed = True
+            session.add(task)
+            session.commit()
+            session.refresh(task)
+            return {"id": task.id, "title": task.title, "completed": task.completed}
+        else:
+            return {"error": f"Task with id {task_id} not found"}
+
+@mcp_server.tools.call("delete_task")
+async def delete_task_handler(task_id: int) -> Dict[str, Any]:
+    with Session(engine) as session:
+        task = session.get(Task, task_id)
+        if task:
+            session.delete(task)
+            session.commit()
+            return {"success": True}
+        else:
+            return {"error": f"Task with id {task_id} not found"}
+
+@mcp_server.tools.call("update_task")
+async def update_task_handler(task_id: int, title: str = None, description: str = None) -> Dict[str, Any]:
+    with Session(engine) as session:
+        task = session.get(Task, task_id)
+        if task:
+            if title is not None:
+                task.title = title
+            if description is not None:
+                task.description = description
+            session.add(task)
+            session.commit()
+            session.refresh(task)
+            return {"id": task.id, "title": task.title, "description": task.description, "completed": task.completed}
+        else:
+            return {"error": f"Task with id {task_id} not found"}
+
+# Function to run the MCP server
+async def run_mcp_server():
+    async with mcp_server.serve():
+        await asyncio.Future()  # Run forever
+```
+
+#### main.py
+```python
+from fastapi import FastAPI, HTTPException, Depends
+from sqlmodel import Session, select
+from .database import get_session
+from .models import Message, Conversation
+from openai import OpenAI
+from typing import Dict, Any
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+app = FastAPI()
+
+@app.post("/api/{user_id}/chat")
+async def chat(user_id: str, message: Dict[str, Any], session: Session = Depends(get_session)):
+    # Create or get conversation for the user
+    conversation = session.exec(
+        select(Conversation).where(Conversation.user_id == user_id)
+    ).first()
+    
+    if not conversation:
+        conversation = Conversation(user_id=user_id)
+        session.add(conversation)
+        session.commit()
+        session.refresh(conversation)
+    
+    # Save user message to DB
+    user_message = Message(
+        conversation_id=conversation.id,
+        role="user",
+        content=message["message"]
+    )
+    session.add(user_message)
+    session.commit()
+    
+    # Fetch conversation history from DB
+    history = session.exec(
+        select(Message).where(Message.conversation_id == conversation.id)
+        .order_by(Message.timestamp)
+    ).all()
+    
+    # Format history for OpenAI
+    formatted_history = [
+        {"role": msg.role, "content": msg.content}
+        for msg in history
+    ]
+    
+    # Initialize OpenAI client
+    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+    
+    # Run the agent with MCP tools
+    response = client.chat.completions.create(
+        model="gpt-4-turbo",
+        messages=formatted_history,
+        tools=[],
+        tool_choice="auto"
+    )
+    
+    # Extract response
+    assistant_message_content = response.choices[0].message.content
+    
+    # Save assistant message to DB
+    assistant_message = Message(
+        conversation_id=conversation.id,
+        role="assistant",
+        content=assistant_message_content
+    )
+    session.add(assistant_message)
+    session.commit()
+    
+    return {
+        "response": assistant_message_content,
+        "conversation_id": conversation.id
+    }
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
+```
+
+### 3. Configure ChatKit on the frontend
+- Initialize a new Next.js project in the /frontend directory
+- Install OpenAI ChatKit dependencies
+- Set up the ChatKit component with proper configuration
+- Connect the frontend to the backend API endpoints
+- Implement user authentication using Better Auth
+
+### 4. Create .env file with Neon URL
+Create a .env file in the backend directory with:
+```
+DATABASE_URL=postgresql://neondb_owner:npg_ELw0kosYW5mp@ep-snowy-fog-ahmkxls0-pooler.c-3.us-east-1.aws.neon.tech/neondb?sslmode=require
+OPENAI_API_KEY=your_openai_api_key_here
+```
+
+### 5. Run the application
+```bash
+cd backend
+uvicorn main:app --reload
+```

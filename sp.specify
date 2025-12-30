@@ -1,0 +1,75 @@
+# AI Todo Chatbot Phase III Specification
+
+## Database Models
+
+### Task Model
+- id: Integer (Primary Key, Auto-increment)
+- title: String (Not Null)
+- description: String (Optional)
+- completed: Boolean (Default: False)
+
+### Conversation Model
+- id: Integer (Primary Key, Auto-increment)
+- user_id: String (Foreign Key reference)
+- created_at: DateTime (Default: Current timestamp)
+- updated_at: DateTime (Default: Current timestamp, Updates on modification)
+
+### Message Model
+- id: Integer (Primary Key, Auto-increment)
+- conversation_id: Integer (Foreign Key reference to Conversation)
+- role: String (Either 'user', 'assistant', or 'system')
+- content: String (Not Null)
+- timestamp: DateTime (Default: Current timestamp)
+
+## MCP Tools
+
+### add_task
+- Purpose: Add a new task to the user's task list
+- Parameters: title (string), description (optional string)
+- Returns: Task object with id and status
+
+### list_tasks
+- Purpose: Retrieve all tasks for a specific user
+- Parameters: completed (optional boolean, to filter by completion status)
+- Returns: Array of Task objects
+
+### complete_task
+- Purpose: Mark a specific task as completed
+- Parameters: task_id (integer)
+- Returns: Updated Task object
+
+### delete_task
+- Purpose: Remove a task from the user's task list
+- Parameters: task_id (integer)
+- Returns: Boolean indicating success/failure
+
+### update_task
+- Purpose: Modify an existing task's title or description
+- Parameters: task_id (integer), title (optional string), description (optional string)
+- Returns: Updated Task object
+
+## API Endpoint
+
+### POST /api/{user_id}/chat
+- Purpose: Process user message and return AI response
+- Path Parameter: user_id (string)
+- Request Body: { message: string }
+- Process:
+  1. Fetch conversation history from DB for the user
+  2. Run the Agent with MCP tools
+  3. Save new message to DB
+  4. Return AI response
+- Response: { response: string, conversation_id: integer }
+
+## Tech Stack
+
+- Python 3.10+
+- FastAPI
+- SQLModel
+- OpenAI Agents SDK
+- Better Auth
+
+## Environment
+
+- Use DATABASE_URL from .env for Neon PostgreSQL connection
+- Other environment variables as needed for OpenAI API, authentication, etc.

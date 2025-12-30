@@ -1,55 +1,57 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!-- Sync Impact Report
+Version Change: 0.0.0 -> 1.0.0 (Initial Ratification)
+Modified Principles: Established core values (Reliability, Politeness, Efficiency, Completeness, MCP Standardization)
+Added Sections: Technology Stack & Architecture, Delivery & Automation
+Templates Requiring Updates: ✅ None (Initial Setup)
+Follow-up TODOs: None
+-->
+
+# Phase III AI-Powered Todo Chatbot Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Reliability & Stateless Architecture
+The system MUST be designed with a stateless architecture to ensure scalability, resilience, and horizontal scaling. Components should not rely on local memory for state persistence across requests; all state must be persisted to the database (Neon Serverless PostgreSQL). This ensures the system is resilient to restarts and capable of seamless scaling.
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### II. Politeness & User Experience
+Agent interactions MUST be friendly, confirmatory, and handle errors gracefully. The system should embody a helpful and warm persona. User intent should be confirmed (e.g., "I've added that task for you"), and ambiguities should be resolved proactively or by chaining tool calls, ensuring a smooth conversational flow.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### III. Efficiency & Sophistication
+Implementation MUST prioritize efficiency, speed, and cleanliness. Code should be sophisticated yet minimal ("refined logic"), avoiding unnecessary boilerplate. Solutions should be idiomatic to the chosen technology stack (Python/FastAPI/React) and optimized for performance.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### IV. Completeness & Functional Integrity
+The solution MUST cover all specified requirements: basic task operations (CRUD), database models (Task, Conversation, Message), and specific MCP tool definitions. Agent behaviors must include natural language processing for task operations, history fetching, and error handling. No feature should be left partially implemented; "working" means fully functional from the user's perspective.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### V. Standardized AI Interaction (MCP & Agents SDK)
+The project MUST utilize the Official Model Context Protocol (MCP) SDK for defining tools and the OpenAI Agents SDK for agent logic. This ensures a standardized, modular approach to AI-application interaction. Tools (add_task, list_tasks, etc.) are the primary interface for the agent to interact with the database.
 
-### [PRINCIPLE_6_NAME]
+## Technology Stack & Architecture
 
+**Stack:**
+*   **Frontend:** OpenAI ChatKit (React/Vite)
+*   **Backend:** Python FastAPI, OpenAI Agents SDK, Official MCP SDK
+*   **Database:** Neon Serverless PostgreSQL (SQLModel ORM)
+*   **Auth:** Better Auth
 
-[PRINCIPLE__DESCRIPTION]
+**Architecture:**
+*   **Flow:** ChatKit UI -> FastAPI (`/api/{user_id}/chat`) -> Agents SDK -> MCP Server -> Neon DB.
+*   The API endpoint MUST be stateless, persisting conversation history and messages to the DB.
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+## Delivery & Automation
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+**Deliverables:**
+*   Complete GitHub repository structure: `/frontend`, `/backend`, `/specs`.
+*   Database migrations via SQLModel.
+*   Comprehensive `README.md` with setup instructions, environment variable configuration, and usage guide.
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
-
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+**Automation:**
+*   All setup and installation steps (e.g., `pip install`, `npm install`) MUST be automated via scripts or clearly provided as executable commands. The user should not be required to perform manual coding.
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+This Constitution supersedes all other project documentation. Any deviation from these principles requires a formal amendment to this document.
+*   **Amendments:** Must be documented with a clear rationale and version bump.
+*   **Compliance:** All specifications (`/specs`), plans, and code changes must be verified against these principles.
+*   **Version Control:** Semantic versioning (MAJOR.MINOR.PATCH) applies to this governance document.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Version**: 1.0.0 | **Ratified**: 2025-12-29 | **Last Amended**: 2025-12-29

@@ -1,0 +1,32 @@
+# AI Todo Chatbot Phase III Constitution
+
+## Technology Stack
+
+### Frontend
+- OpenAI ChatKit (Next.js based)
+
+### Backend
+- FastAPI (Python)
+
+### Database
+- SQLModel + Neon PostgreSQL
+
+### Logic
+- Use Official MCP SDK to build tools
+- Use OpenAI Agents SDK for AI logic
+
+## Core Principles
+
+### Statelessness
+- No session data stored in memory
+- All history must be saved in Neon DB
+
+### Error Handling
+- Implement graceful failures only
+- Ensure robust error recovery mechanisms
+
+## Architecture Guidelines
+- Maintain clean separation between frontend and backend
+- Use async/await patterns for database operations
+- Implement proper logging and monitoring
+- Follow security best practices for API endpoints

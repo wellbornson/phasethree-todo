@@ -1,0 +1,14 @@
+NEON muhammad.zahid.imam@gmail.com
+NEON URL psql 'postgresql://neondb_owner:npg_ELw0kosYW5mp@ep-snowy-fog-ahmkxls0-pooler.c-3.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require'
+
+
+
+Backend (FastAPI): Running at http://localhost:8000
+Frontend (Vite): Running at http://localhost:5173
+
+
+cd backend
+.\venv\Scripts\python -m uvicorn app.main:app --reload
+
+cd frontend
+npm run dev

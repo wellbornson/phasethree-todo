@@ -1,0 +1,40 @@
+# AI Todo Chatbot Phase III Implementation Plan
+
+## Phase A: Create Project Structure
+- Create /frontend directory with Next.js project using OpenAI ChatKit
+- Create /backend directory with FastAPI project structure
+- Create /specs directory for specifications and documentation
+- Set up proper directory structure with subdirectories for models, tools, routes, etc.
+
+## Phase B: Setup Environment Variables
+- Create .env file with Neon PostgreSQL DATABASE_URL
+- Add OpenAI API key to .env
+- Add any other required environment variables (Better Auth, etc.)
+- Create .env.example for reference
+
+## Phase C: Build the MCP Server and Tools
+- Implement MCP server using the Official MCP SDK
+- Create the required tools: add_task, list_tasks, complete_task, delete_task, update_task
+- Test MCP tools independently before integration
+- Ensure tools interact properly with the database models
+
+## Phase D: Build the FastAPI Chat Endpoint with Agentic Logic
+- Implement POST /api/{user_id}/chat endpoint
+- Integrate OpenAI Agents SDK with MCP tools
+- Implement logic to fetch conversation history from DB
+- Implement logic to save messages to DB
+- Handle error cases gracefully
+
+## Phase E: Setup ChatKit UI and Connect to Backend
+- Implement OpenAI ChatKit in the frontend
+- Connect frontend to backend API endpoints
+- Implement user authentication using Better Auth
+- Ensure proper state management without session storage
+- Test UI interactions with backend
+
+## Phase F: Testing and Final Server Run Commands
+- Write unit tests for backend endpoints
+- Write integration tests for MCP tools
+- Test complete user flows
+- Create run commands for both frontend and backend
+- Document deployment instructions
